@@ -23,9 +23,8 @@ class Model(torch.nn.Module):
         x = self.dense(x)
         return x
 
-def load_model(path='mnist_thin_new.pkl'):
+def load_model(path='mnist.pkl'):
     model = Model()
-    # device = 
     model.load_state_dict(torch.load(path, map_location=torch.device('cpu')))
     model.eval()
     return model
