@@ -12,7 +12,7 @@ predict = True
 if predict:
     import torch
     from model import load_model
-    model = load_model()
+    model = load_model(path='mnist.pkl')
     print('model loaded!')
 
 mixer.init()
@@ -47,16 +47,12 @@ while True:
       # 用高斯滤波进行模糊处理，进行处理的原因：每个输入的视频都会因自然震动、光照变化或者摄像头本身等原因而产生噪声。对噪声进行平滑是为了避免在运动和跟踪时将其检测出来。
       gray_lwpCV = cv2.cvtColor(frame_lwpCV, cv2.COLOR_BGR2GRAY)
       gray_lwpCV = cv2.GaussianBlur(gray_lwpCV, (21, 21), 0)
-      # gray_lwpCV = preprocess(frame_lwpCV)
 
       # 将前2s内容设置为整个输入的背景
       # if background is None:
       if time() - t_start < 2:
           if background is None:
               background = gray_lwpCV
-          # else:
-          #   background = np.maximum(background, gray_lwpCV)
-          # continue
       # 对于每个从背景之后读取的帧都会计算其与北京之间的差异，并得到一个差分图（different map）。
       # 还需要应用阈值来得到一幅黑白图像，并通过下面代码来膨胀（dilate）图像，从而对孔（hole）和缺陷（imperfection）进行归一化处理
       diff = gray_lwpCV - background
@@ -77,13 +73,8 @@ while True:
       #         continue
       #     (x, y, w, h) = cv2.boundingRect(c)  # 该函数计算矩形的边界框
       #     cv2.rectangle(frame_lwpCV, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
-  #   cv2.imshow('contours', frame_lwpCV) # 显示图像
-      # cv2.imshow('dis', diff)
-  #   print(np.sum(diff))
       diff_sum = np.sum(diff)
       cv2.imshow('dis', diff)
-  #   print(diff_sum, limit)
       t = time()
       if not flag and t - t_start > 2:
           print("\nWarm up ended!")
@@ -102,15 +93,8 @@ while True:
       else:
           limit = max(diff_sum, limit)
           continue
-
-      key = cv2.waitKey(1) & 0xFF
-      # 按'q'健退出循环
-      if key == ord('q'):
-        break
-      # idx += 1
       if started and t - t_old > 2:
           break
-      # print(idx)
   # When everything done, release the capture
   camera.release()
   cv2.destroyAllWindows()
@@ -125,18 +109,14 @@ while True:
       list_traj.pop()
       list_time.pop()
 
-  # center_list = ana_traj(video)
   list_traj = np.array(list_traj)
   center_list, time_list = ana_traj(list_traj, list_time, d_thres=0.1)
-  # center_list = [i for i in center_list if i != None]
 
   x = [i[0] for i in center_list]
   y = [i[1] for i in center_list]
 
   # set figure size
   plt.figure(figsize=(9, 12))
-  # plt.scatter(x, y)
-  # plt.scatter(x, y, s=200)
   plt.plot(x, y, 'o-', linewidth=20)
 
   height = 720
@@ -149,7 +129,6 @@ while True:
   # unset axis
   plt.axis('off')
   plt.savefig('{}_ori.png'.format(t), dpi=50)
-  # plt.show()
 
   traj_filtered = bayes_filter(center_list, time_list)
 
@@ -158,8 +137,6 @@ while True:
 
   # set figure size
   plt.figure(figsize=(9, 12))
-  # plt.scatter(x, y)
-  # plt.scatter(x, y, s=200)
   plt.plot(x, y, 'o-', linewidth=20)
 
   height = 720
@@ -169,7 +146,6 @@ while True:
   plt.ylim(0, height)
   plt.gca().invert_xaxis()
   plt.gca().invert_yaxis()
-  # unset axis
   plt.axis('off')
   plt.savefig('{}_filtered.png'.format(t), dpi=50)
 
@@ -181,12 +157,8 @@ while True:
       
       img[img == 255] = 0
       img[img != 0] = 255
-      # img = cv2.ximgproc.thinning(img)
       img = img/255
       img = (img-0.5)/0.5
-      # plt.figure()
-      # plt.imshow(img)
-      # plt.show()
       img = img.reshape(1, 1, 28, 28)
       img = torch.tensor(img)
       img = img.float()
