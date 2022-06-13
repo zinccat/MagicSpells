@@ -8,7 +8,11 @@ Trained checkpoints can be downloaded from [here](https://disk.pku.edu.cn:443/li
 To run the pipeline, please modify the code to set the path for the trained model and music files.
 
 File structure:
+
 pipe.py -- final pipeline
+
 utils.py -- helper functions
+
 model.py -- model loading
+
 mnist.ipynb -- code for model training
